@@ -1,8 +1,8 @@
 use openmls::prelude::*;
-use openmls::prelude::tls_codec::*;
 use openmls_basic_credential::SignatureKeyPair;
 use openmls_rust_crypto::OpenMlsRustCrypto;
 use openmls_traits::{signatures::Signer, types::SignatureScheme, OpenMlsProvider};
+use tls_codec::{Deserialize, Serialize};
 
 fn credential(
     identity: &[u8],
@@ -32,6 +32,18 @@ fn key_package(
         .unwrap()
 }
 
+fn decode_message(message: MlsMessageOut) -> MlsMessageIn {
+    let bytes = message.to_bytes().expect("MLS message must serialize");
+    MlsMessageIn::tls_deserialize_exact(bytes).expect("MLS message must deserialize")
+}
+
+fn decode_welcome(message: MlsMessageOut) -> Welcome {
+    match decode_message(message).extract() {
+        MlsMessageBodyIn::Welcome(welcome) => welcome,
+        other => panic!("expected welcome message, got {other:?}"),
+    }
+}
+
 fn join_from_welcome(
     provider: &impl OpenMlsProvider,
     welcome: Welcome,
@@ -48,8 +60,8 @@ fn process_application(
     provider: &impl OpenMlsProvider,
     message: MlsMessageOut,
 ) -> Vec<u8> {
-    let protocol = message
-        .into_protocol_message()
+    let protocol = decode_message(message)
+        .try_into_protocol_message()
         .expect("application message must be protocol message");
     let processed = group
         .process_message(provider, protocol)
@@ -86,8 +98,7 @@ fn superapp_group_epoch_contract() {
         .unwrap();
     alice.merge_pending_commit(&alice_provider).unwrap();
     assert!(alice.epoch() > epoch0);
-    let welcome_bob = MlsMessageIn::from(welcome_bob).into_welcome().unwrap();
-    let mut bob = join_from_welcome(&bob_provider, welcome_bob);
+    let mut bob = join_from_welcome(&bob_provider, decode_welcome(welcome_bob));
 
     let m1 = alice
         .create_message(&alice_provider, &alice_signer, b"epoch-one")
@@ -104,7 +115,10 @@ fn superapp_group_epoch_contract() {
     alice.merge_pending_commit(&alice_provider).unwrap();
 
     let processed_remove = bob
-        .process_message(&bob_provider, remove_bob.into_protocol_message().unwrap())
+        .process_message(
+            &bob_provider,
+            decode_message(remove_bob).try_into_protocol_message().unwrap(),
+        )
         .unwrap();
     match processed_remove.into_content() {
         ProcessedMessageContent::StagedCommitMessage(staged) => {
@@ -117,9 +131,9 @@ fn superapp_group_epoch_contract() {
     let future_for_members = alice
         .create_message(&alice_provider, &alice_signer, b"after-bob-removal")
         .unwrap();
-    let future_bytes = future_for_members.to_bytes().unwrap();
-    let future_in = MlsMessageIn::tls_deserialize_exact(future_bytes).unwrap();
-    let future_protocol = future_in.try_into_protocol_message().unwrap();
+    let future_protocol = decode_message(future_for_members)
+        .try_into_protocol_message()
+        .unwrap();
     assert!(
         bob.process_message(&bob_provider, future_protocol).is_err(),
         "removed member must not decrypt future application data"
@@ -133,8 +147,7 @@ fn superapp_group_epoch_contract() {
         .add_members(&alice_provider, &alice_signer, &[charlie_kp.key_package().clone()])
         .unwrap();
     alice.merge_pending_commit(&alice_provider).unwrap();
-    let welcome_charlie = MlsMessageIn::from(welcome_charlie).into_welcome().unwrap();
-    let mut charlie = join_from_welcome(&charlie_provider, welcome_charlie);
+    let mut charlie = join_from_welcome(&charlie_provider, decode_welcome(welcome_charlie));
 
     let old_in = MlsMessageIn::tls_deserialize_exact(before_charlie_bytes).unwrap();
     let old_protocol = old_in.try_into_protocol_message().unwrap();
