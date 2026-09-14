@@ -1,0 +1,28 @@
+name: Super App OpenMLS v0.6 conformance
+
+on:
+  push:
+    branches:
+      - kael/superapp-openmls-v0.6
+    paths:
+      - 'superapp-openmls-v06/**'
+      - '.github/workflows/superapp-openmls-v06.yml'
+  pull_request:
+    paths:
+      - 'superapp-openmls-v06/**'
+      - '.github/workflows/superapp-openmls-v06.yml'
+  workflow_dispatch:
+
+jobs:
+  openmls-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.91.0
+      - name: Toolchain evidence
+        run: |
+          rustc --version
+          cargo --version
+      - name: Run Super App/OpenMLS contract
+        run: cargo test --manifest-path superapp-openmls-v06/Cargo.toml --all-targets --verbose

@@ -1,0 +1,33 @@
+name: Super App OpenMLS v0.7 live bridge
+
+on:
+  push:
+    branches:
+      - kael/superapp-openmls-v0.7
+    paths:
+      - 'superapp-openmls-v07/**'
+      - '.github/workflows/superapp-openmls-v07.yml'
+  pull_request:
+    paths:
+      - 'superapp-openmls-v07/**'
+      - '.github/workflows/superapp-openmls-v07.yml'
+  workflow_dispatch:
+
+jobs:
+  live-openmls-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.91.0
+      - name: Toolchain evidence
+        run: |
+          rustc --version
+          cargo --version
+          node --version
+      - name: Build persistent OpenMLS bridge
+        run: cargo build --manifest-path superapp-openmls-v07/Cargo.toml --verbose
+      - name: Test Node CryptoProvider -> Rust -> OpenMLS -> SQLite
+        env:
+          OPENMLS_BRIDGE_BIN: ${{ github.workspace }}/superapp-openmls-v07/target/debug/superapp-openmls-bridge
+        run: node --test superapp-openmls-v07/integration.test.mjs
