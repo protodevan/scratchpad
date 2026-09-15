@@ -1,0 +1,18 @@
+{
+  "surface": "Commerce Demon microwave lab v0.3 · Demon Finds",
+  "state": "TEMP_TEST_SNAPSHOT",
+  "parts": [
+    {"file":"p0.txt","bytes":5000,"sha256":"e9707c7faa5c0195757a815b1a62490af0af7b2b5e0fd80ff8d4bf927e426351"},
+    {"file":"p1.txt","bytes":5000,"sha256":"18f4786b963b36238b4f72d56fed608474df96886ec0e45a3a23f12cb6808b4d"},
+    {"file":"p2.txt","bytes":5000,"sha256":"58b77b39375b35d4c47e3115bac1813e6bf15802ad731c4afd01b064f4c15cbc"},
+    {"file":"p3.txt","bytes":5000,"sha256":"3bcda4ec8040652967e651e42c5bc2d685d1ecafcc2ce8093d896a173a8b9347"},
+    {"file":"p4.txt","bytes":2120,"sha256":"ae568776f86ec2b18179273517f67130796b8631b96c9ec17df05508922fe020"}
+  ],
+  "combined_base64_bytes": 22120,
+  "combined_base64_sha256": "ec5276f74c6feb9710a566e73684295421ef68fa138b57338549548619f9f726",
+  "gzip_bytes": 16589,
+  "gzip_sha256": "01e9b4d0aa44bfb061f2cc71cbbd55990c64e87a2619c75cd588263c1a2a6aa6",
+  "inner_html_bytes": 69449,
+  "inner_html_sha256": "407c91ecb0d1715921bd0cdba54d9ae4859033a819109ff875525063986538a6",
+  "authority": "Snapshot transport receipt only; does not upgrade procurement coverage or winner authority."
+}
