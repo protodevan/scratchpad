@@ -1,0 +1,1 @@
+{"name":"hoorhulp","version":"1.0.0","private":true,"type":"module","scripts":{"build":"vite build"},"dependencies":{"three":"0.186.1"},"devDependencies":{"vite":"^7.1.0"}}
